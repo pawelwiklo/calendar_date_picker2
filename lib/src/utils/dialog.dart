@@ -17,6 +17,7 @@ Future<List<DateTime?>?> showCalendarDatePicker2Dialog({
   RouteSettings? routeSettings,
   String? barrierLabel,
   TransitionBuilder? builder,
+  Widget? header.
 }) {
   var dialog = Dialog(
     insetPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
@@ -29,8 +30,9 @@ Future<List<DateTime?>?> showCalendarDatePicker2Dialog({
       width: dialogSize.width,
       height: max(dialogSize.height, 410),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          header ?? SizedBox.shrink(),
           CalendarDatePicker2WithActionButtons(
             value: value,
             config: config.copyWith(openedFromDialog: true),
