@@ -18,11 +18,10 @@ part '_impl/year_picker.dart';
 
 const Duration _monthScrollDuration = Duration(milliseconds: 200);
 
-const double _dayPickerRowHeight = 42.0;
+const double _dayPickerRowHeight = 50.0;
 const int _maxDayPickerRowCount = 6; // A 31 day month that starts on Saturday.
 // One extra row for the day-of-week header.
-const double _maxDayPickerHeight =
-    _dayPickerRowHeight * (_maxDayPickerRowCount + 1);
+const double _maxDayPickerHeight = _dayPickerRowHeight * (_maxDayPickerRowCount + 1);
 const double _monthPickerHorizontalPadding = 8.0;
 
 const int _yearPickerColumnCount = 3;
@@ -46,17 +45,13 @@ class CalendarDatePicker2 extends StatefulWidget {
     const invalid = false;
 
     if (config.calendarType == CalendarDatePicker2Type.single) {
-      assert(value.length < 2,
-          'Error: single date picker only allows maximum one initial date');
+      assert(value.length < 2, 'Error: single date picker only allows maximum one initial date');
     }
 
-    if (config.calendarType == CalendarDatePicker2Type.range &&
-        value.length > 1) {
+    if (config.calendarType == CalendarDatePicker2Type.range && value.length > 1) {
       final isRangePickerValueValid = value[0] == null
           ? (value[1] != null ? invalid : valid)
-          : (value[1] != null
-              ? (value[1]!.isBefore(value[0]!) ? invalid : valid)
-              : valid);
+          : (value[1] != null ? (value[1]!.isBefore(value[0]!) ? invalid : valid) : valid);
 
       assert(
         isRangePickerValueValid,
@@ -192,13 +187,10 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
       }
 
       if (fromYearPicker) {
-        final selectedDatesInThisYear = _selectedDates
-            .where((d) => d?.year == date.year)
-            .toList()
+        final selectedDatesInThisYear = _selectedDates.where((d) => d?.year == date.year).toList()
           ..sort((d1, d2) => d1!.compareTo(d2!));
         if (selectedDatesInThisYear.isNotEmpty) {
-          newDisplayedMonthDate =
-              DateTime(date.year, selectedDatesInThisYear[0]!.month);
+          newDisplayedMonthDate = DateTime(date.year, selectedDatesInThisYear[0]!.month);
         }
       }
 
@@ -241,8 +233,7 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
           break;
 
         case CalendarDatePicker2Type.multi:
-          final index =
-              selectedDates.indexWhere((d) => DateUtils.isSameDay(d, value));
+          final index = selectedDates.indexWhere((d) => DateUtils.isSameDay(d, value));
           if (index != -1) {
             selectedDates.removeAt(index);
           } else {
@@ -258,10 +249,8 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
 
           final bidirectional = widget.config.rangeBidirectional;
 
-          final isRangeSet =
-              selectedDates.length > 1 && selectedDates[1] != null;
-          final isSelectedDayBeforeStartDate =
-              value.isBefore(selectedDates[0]!);
+          final isRangeSet = selectedDates.length > 1 && selectedDates[1] != null;
+          final isSelectedDayBeforeStartDate = value.isBefore(selectedDates[0]!);
 
           if (isRangeSet) {
             selectedDates = [value, null];
@@ -278,10 +267,9 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
         ..removeWhere((d) => d == null)
         ..sort((d1, d2) => d1!.compareTo(d2!));
 
-      final isValueDifferent =
-          widget.config.calendarType != CalendarDatePicker2Type.single ||
-              !DateUtils.isSameDay(selectedDates[0],
-                  _selectedDates.isNotEmpty ? _selectedDates[0] : null);
+      final isValueDifferent = widget.config.calendarType != CalendarDatePicker2Type.single ||
+          !DateUtils.isSameDay(
+              selectedDates[0], _selectedDates.isNotEmpty ? _selectedDates[0] : null);
       if (isValueDifferent) {
         _selectedDates = [...selectedDates];
         widget.onValueChanged?.call(_selectedDates);
@@ -302,8 +290,7 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
         );
       case DatePickerMode.year:
         return Padding(
-          padding: EdgeInsets.only(
-              top: widget.config.controlsHeight ?? _subHeaderHeight),
+          padding: EdgeInsets.only(top: widget.config.controlsHeight ?? _subHeaderHeight),
           child: YearPicker(
             config: widget.config,
             key: _yearPickerKey,
@@ -323,22 +310,19 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
     return Stack(
       children: <Widget>[
         SizedBox(
-          height: (widget.config.controlsHeight ?? _subHeaderHeight) +
-              _maxDayPickerHeight,
+          height: (widget.config.controlsHeight ?? _subHeaderHeight) + _maxDayPickerHeight,
           child: _buildPicker(),
         ),
         // Put the mode toggle button on top so that it won't be covered up by the _CalendarView
         _DatePickerModeToggleButton(
           config: widget.config,
           mode: _mode,
-          title: widget.config.modePickerTextHandler
-                  ?.call(monthDate: _currentDisplayedMonthDate) ??
+          title: widget.config.modePickerTextHandler?.call(monthDate: _currentDisplayedMonthDate) ??
               _localizations.formatMonthYear(_currentDisplayedMonthDate),
           onTitlePressed: () {
             // Toggle the day/year mode.
-            _handleModeChanged(_mode == DatePickerMode.day
-                ? DatePickerMode.year
-                : DatePickerMode.day);
+            _handleModeChanged(
+                _mode == DatePickerMode.day ? DatePickerMode.year : DatePickerMode.day);
           },
         ),
       ],

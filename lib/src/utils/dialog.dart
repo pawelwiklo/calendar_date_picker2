@@ -32,10 +32,13 @@ Future<List<DateTime?>?> showCalendarDatePicker2Dialog({
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          header ?? SizedBox.shrink(),
-          CalendarDatePicker2WithActionButtons(
-            value: value,
-            config: config.copyWith(openedFromDialog: true),
+          header ?? const SizedBox.shrink(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: CalendarDatePicker2WithActionButtons(
+              value: value,
+              config: config.copyWith(openedFromDialog: true),
+            ),
           ),
         ],
       ),

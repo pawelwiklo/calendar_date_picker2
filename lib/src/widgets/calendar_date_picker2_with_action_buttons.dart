@@ -47,8 +47,7 @@ class _CalendarDatePicker2WithActionButtonsState
   }
 
   @override
-  void didUpdateWidget(
-      covariant CalendarDatePicker2WithActionButtons oldWidget) {
+  void didUpdateWidget(covariant CalendarDatePicker2WithActionButtons oldWidget) {
     var isValueSame = oldWidget.value.length == widget.value.length;
 
     if (isValueSame) {
@@ -72,8 +71,7 @@ class _CalendarDatePicker2WithActionButtonsState
 
   @override
   Widget build(BuildContext context) {
-    final MaterialLocalizations localizations =
-        MaterialLocalizations.of(context);
+    final MaterialLocalizations localizations = MaterialLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -100,10 +98,12 @@ class _CalendarDatePicker2WithActionButtonsState
     );
   }
 
-  Widget _buildCancelButton(
-      ColorScheme colorScheme, MaterialLocalizations localizations) {
+  Widget _buildCancelButton(ColorScheme colorScheme, MaterialLocalizations localizations) {
     return InkWell(
-      borderRadius: BorderRadius.circular(5),
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      hoverColor: Colors.transparent,
       onTap: () => setState(() {
         _editCache = _values;
         widget.onCancelTapped?.call();
@@ -113,15 +113,14 @@ class _CalendarDatePicker2WithActionButtonsState
         }
       }),
       child: Container(
-        padding: widget.config.buttonPadding ??
-            const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+        padding:
+            widget.config.buttonPadding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
         child: widget.config.cancelButton ??
             Text(
               localizations.cancelButtonLabel.toUpperCase(),
               style: widget.config.cancelButtonTextStyle ??
                   TextStyle(
-                    color: widget.config.selectedDayHighlightColor ??
-                        colorScheme.primary,
+                    color: widget.config.selectedDayHighlightColor ?? colorScheme.primary,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -130,10 +129,12 @@ class _CalendarDatePicker2WithActionButtonsState
     );
   }
 
-  Widget _buildOkButton(
-      ColorScheme colorScheme, MaterialLocalizations localizations) {
+  Widget _buildOkButton(ColorScheme colorScheme, MaterialLocalizations localizations) {
     return InkWell(
-      borderRadius: BorderRadius.circular(5),
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      hoverColor: Colors.transparent,
       onTap: () => setState(() {
         _values = _editCache;
         widget.onValueChanged?.call(_values);
@@ -144,15 +145,14 @@ class _CalendarDatePicker2WithActionButtonsState
         }
       }),
       child: Container(
-        padding: widget.config.buttonPadding ??
-            const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+        padding:
+            widget.config.buttonPadding ?? const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
         child: widget.config.okButton ??
             Text(
               localizations.okButtonLabel.toUpperCase(),
               style: widget.config.okButtonTextStyle ??
                   TextStyle(
-                    color: widget.config.selectedDayHighlightColor ??
-                        colorScheme.primary,
+                    color: widget.config.selectedDayHighlightColor ?? colorScheme.primary,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),

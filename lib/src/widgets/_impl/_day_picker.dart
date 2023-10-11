@@ -39,12 +39,11 @@ class _DayPickerState extends State<_DayPicker> {
   @override
   void initState() {
     super.initState();
-    final int daysInMonth = DateUtils.getDaysInMonth(
-        widget.displayedMonth.year, widget.displayedMonth.month);
+    final int daysInMonth =
+        DateUtils.getDaysInMonth(widget.displayedMonth.year, widget.displayedMonth.month);
     _dayFocusNodes = List<FocusNode>.generate(
       daysInMonth,
-      (int index) =>
-          FocusNode(skipTraversal: true, debugLabel: 'Day ${index + 1}'),
+      (int index) => FocusNode(skipTraversal: true, debugLabel: 'Day ${index + 1}'),
     );
   }
 
@@ -53,8 +52,7 @@ class _DayPickerState extends State<_DayPicker> {
     super.didChangeDependencies();
     // Check to see if the focused date is in this month, if so focus it.
     final DateTime? focusedDate = _FocusedDate.maybeOf(context);
-    if (focusedDate != null &&
-        DateUtils.isSameMonth(widget.displayedMonth, focusedDate)) {
+    if (focusedDate != null && DateUtils.isSameMonth(widget.displayedMonth, focusedDate)) {
       _dayFocusNodes[focusedDate.day - 1].requestFocus();
     }
   }
@@ -85,15 +83,11 @@ class _DayPickerState extends State<_DayPicker> {
   /// _ _ _ _ 1 2 3
   /// 4 5 6 7 8 9 10
   /// ```
-  List<Widget> _dayHeaders(
-      TextStyle? headerStyle, MaterialLocalizations localizations) {
+  List<Widget> _dayHeaders(TextStyle? headerStyle, MaterialLocalizations localizations) {
     final List<Widget> result = <Widget>[];
-    final weekdays =
-        widget.config.weekdayLabels ?? localizations.narrowWeekdays;
-    final firstDayOfWeek =
-        widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex;
-    assert(firstDayOfWeek >= 0 && firstDayOfWeek <= 6,
-        'firstDayOfWeek must between 0 and 6');
+    final weekdays = widget.config.weekdayLabels ?? localizations.narrowWeekdays;
+    final firstDayOfWeek = widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex;
+    assert(firstDayOfWeek >= 0 && firstDayOfWeek <= 6, 'firstDayOfWeek must between 0 and 6');
     for (int i = firstDayOfWeek; true; i = (i + 1) % 7) {
       final String weekday = weekdays[i];
       result.add(ExcludeSemantics(
@@ -112,8 +106,7 @@ class _DayPickerState extends State<_DayPicker> {
   @override
   Widget build(BuildContext context) {
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final MaterialLocalizations localizations =
-        MaterialLocalizations.of(context);
+    final MaterialLocalizations localizations = MaterialLocalizations.of(context);
     final TextTheme textTheme = Theme.of(context).textTheme;
     final TextStyle? headerStyle = textTheme.bodySmall?.apply(
       color: colorScheme.onSurface.withOpacity(0.60),
@@ -129,8 +122,8 @@ class _DayPickerState extends State<_DayPicker> {
     final int month = widget.displayedMonth.month;
 
     final int daysInMonth = DateUtils.getDaysInMonth(year, month);
-    final int dayOffset = getMonthFirstDayOffset(year, month,
-        widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex);
+    final int dayOffset = getMonthFirstDayOffset(
+        year, month, widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex);
 
     final List<Widget> dayItems = _dayHeaders(headerStyle, localizations);
     // 1-based day of month, e.g. 1-31 for January, and 1-29 for February on
@@ -148,8 +141,7 @@ class _DayPickerState extends State<_DayPicker> {
         final bool isSelectedDay =
             widget.selectedDates.any((d) => DateUtils.isSameDay(d, dayToBuild));
 
-        final bool isToday =
-            DateUtils.isSameDay(widget.config.currentDate, dayToBuild);
+        final bool isToday = DateUtils.isSameDay(widget.config.currentDate, dayToBuild);
 
         BoxDecoration? decoration;
         Color dayColor = enabledDayColor;
@@ -159,11 +151,8 @@ class _DayPickerState extends State<_DayPicker> {
           dayColor = selectedDayColor;
           decoration = BoxDecoration(
             borderRadius: widget.config.dayBorderRadius,
-            color: widget.config.selectedDayHighlightColor ??
-                selectedDayBackground,
-            shape: widget.config.dayBorderRadius != null
-                ? BoxShape.rectangle
-                : BoxShape.circle,
+            color: widget.config.selectedDayHighlightColor ?? selectedDayBackground,
+            shape: widget.config.dayBorderRadius != null ? BoxShape.rectangle : BoxShape.circle,
           );
         } else if (isDisabled) {
           dayColor = disabledDayColor;
@@ -174,15 +163,12 @@ class _DayPickerState extends State<_DayPicker> {
           decoration = BoxDecoration(
             borderRadius: widget.config.dayBorderRadius,
             border: Border.all(color: dayColor),
-            shape: widget.config.dayBorderRadius != null
-                ? BoxShape.rectangle
-                : BoxShape.circle,
+            shape: widget.config.dayBorderRadius != null ? BoxShape.rectangle : BoxShape.circle,
           );
         }
 
-        var customDayTextStyle =
-            widget.config.dayTextStylePredicate?.call(date: dayToBuild) ??
-                widget.config.dayTextStyle;
+        var customDayTextStyle = widget.config.dayTextStylePredicate?.call(date: dayToBuild) ??
+            widget.config.dayTextStyle;
 
         if (isToday && widget.config.todayTextStyle != null) {
           customDayTextStyle = widget.config.todayTextStyle;
@@ -208,8 +194,7 @@ class _DayPickerState extends State<_DayPicker> {
           final endDate = DateUtils.dateOnly(widget.selectedDates[1]);
 
           isDateInBetweenRangePickerSelectedDates =
-              !(dayToBuild.isBefore(startDate) ||
-                      dayToBuild.isAfter(endDate)) &&
+              !(dayToBuild.isBefore(startDate) || dayToBuild.isAfter(endDate)) &&
                   !DateUtils.isSameDay(startDate, endDate);
         }
 
@@ -222,8 +207,7 @@ class _DayPickerState extends State<_DayPicker> {
           customDayTextStyle = widget.config.selectedDayTextStyle;
         }
 
-        final dayTextStyle =
-            customDayTextStyle ?? dayStyle.apply(color: dayColor);
+        final dayTextStyle = customDayTextStyle ?? dayStyle.apply(color: dayColor);
 
         Widget dayWidget = widget.config.dayBuilder?.call(
               date: dayToBuild,
@@ -242,9 +226,13 @@ class _DayPickerState extends State<_DayPicker> {
 
         if (isDateInBetweenRangePickerSelectedDates) {
           final rangePickerIncludedDayDecoration = BoxDecoration(
+            border: Border.all(
+                width: 0,
+                color: widget.config.selectedRangeHighlightColor ??
+                    (widget.config.selectedDayHighlightColor ?? selectedDayBackground)
+                        .withOpacity(0.15)),
             color: widget.config.selectedRangeHighlightColor ??
-                (widget.config.selectedDayHighlightColor ??
-                        selectedDayBackground)
+                (widget.config.selectedDayHighlightColor ?? selectedDayBackground)
                     .withOpacity(0.15),
           );
 
@@ -252,41 +240,70 @@ class _DayPickerState extends State<_DayPicker> {
             DateUtils.dateOnly(widget.selectedDates[0]),
             dayToBuild,
           )) {
-            dayWidget = Stack(
-              children: [
-                Row(children: [
-                  const Spacer(),
-                  Expanded(
-                    child: Container(
-                      decoration: rangePickerIncludedDayDecoration,
+            if (((widget.selectedDates[0].weekday + 1) % 7) != widget.config.firstDayOfWeek) {
+              dayWidget = Stack(
+                children: [
+                  Row(children: [
+                    Expanded(
+                      child: Container(
+                        decoration: rangePickerIncludedDayDecoration.copyWith(
+                          borderRadius: widget.config.dayBorderRadius?.copyWith(
+                            topRight: Radius.zero,
+                            bottomRight: Radius.zero,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ]),
-                dayWidget,
-              ],
-            );
+                  ]),
+                  dayWidget
+                ],
+              );
+            }
           } else if (DateUtils.isSameDay(
             DateUtils.dateOnly(widget.selectedDates[1]),
             dayToBuild,
           )) {
-            dayWidget = Stack(
-              children: [
-                Row(children: [
-                  Expanded(
-                    child: Container(
-                      decoration: rangePickerIncludedDayDecoration,
+            if ((widget.selectedDates[1].weekday % 7) != widget.config.firstDayOfWeek) {
+              dayWidget = Stack(
+                children: [
+                  Row(children: [
+                    Expanded(
+                      child: Container(
+                        decoration: rangePickerIncludedDayDecoration.copyWith(
+                          borderRadius: widget.config.dayBorderRadius?.copyWith(
+                            topLeft: Radius.zero,
+                            bottomLeft: Radius.zero,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                ]),
-                dayWidget,
-              ],
-            );
+                  ]),
+                  dayWidget,
+                ],
+              );
+            }
           } else {
+            final firstDayOfWeek =
+                widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex;
+            BoxDecoration dec = rangePickerIncludedDayDecoration;
+            if ((dayToBuild.weekday % 7) == firstDayOfWeek) {
+              dec = dec.copyWith(
+                  borderRadius: widget.config.dayBorderRadius?.copyWith(
+                topRight: Radius.zero,
+                bottomRight: Radius.zero,
+              ));
+            }
+            if (((dayToBuild.weekday + 1) % 7) == firstDayOfWeek) {
+              dec = dec.copyWith(
+                  borderRadius: widget.config.dayBorderRadius?.copyWith(
+                topLeft: Radius.zero,
+                bottomLeft: Radius.zero,
+              ));
+            }
             dayWidget = Stack(
               children: [
                 Container(
-                  decoration: rangePickerIncludedDayDecoration,
+                  decoration: dec,
                 ),
                 dayWidget,
               ],
@@ -295,7 +312,7 @@ class _DayPickerState extends State<_DayPicker> {
         }
 
         dayWidget = Padding(
-          padding: const EdgeInsets.symmetric(vertical: 1),
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: dayWidget,
         );
 
@@ -307,8 +324,11 @@ class _DayPickerState extends State<_DayPicker> {
           dayWidget = InkResponse(
             focusNode: _dayFocusNodes[day - 1],
             onTap: () => widget.onChanged(dayToBuild),
+            highlightShape: BoxShape.rectangle,
+            borderRadius: widget.config.dayBorderRadius,
             radius: _dayPickerRowHeight / 2 + 4,
             splashColor: selectedDayBackground.withOpacity(0.38),
+            splashFactory: NoSplash.splashFactory,
             child: Semantics(
               // We want the day of month to be spoken first irrespective of the
               // locale-specific preferences or TextDirection. This is because
@@ -353,9 +373,7 @@ class _DayPickerState extends State<_DayPicker> {
   ) {
     return Row(
       children: [
-        const Spacer(),
-        AspectRatio(
-          aspectRatio: 1,
+        Expanded(
           child: Container(
             decoration: decoration,
             child: Center(
@@ -366,7 +384,6 @@ class _DayPickerState extends State<_DayPicker> {
             ),
           ),
         ),
-        const Spacer(),
       ],
     );
   }
