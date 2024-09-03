@@ -117,6 +117,7 @@ class _DayPickerState extends State<_DayPicker> {
     final Color selectedDayColor = colorScheme.onPrimary;
     final Color selectedDayBackground = colorScheme.primary;
     final Color todayColor = colorScheme.primary;
+    final Color otherMonthDaysColor = const Color(0xffcccccc);
 
     final int year = widget.displayedMonth.year;
     final int month = widget.displayedMonth.month;
@@ -125,228 +126,65 @@ class _DayPickerState extends State<_DayPicker> {
     final int dayOffset = getMonthFirstDayOffset(
         year, month, widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex);
 
+    final int endOfMonthOffset = getMonthLastDayOffset(
+        year, month, widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex);
+
     final List<Widget> dayItems = _dayHeaders(headerStyle, localizations);
     // 1-based day of month, e.g. 1-31 for January, and 1-29 for February on
     // a leap year.
-    int day = -dayOffset;
+    // int day = -dayOffset - 8;
+    int day = dayOffset > 4 ? -dayOffset - 1 : -dayOffset - 8;
     while (day < daysInMonth) {
       day++;
       if (day < 1) {
-        dayItems.add(Container());
+        final DateTime dayToBuild = DateTime(year, month, 1 + day);
+        if (dayToBuild.day == 1) continue;
+        Widget dayTile = _buildDayTile(
+          dayToBuild,
+          enabledDayColor,
+          selectedDayColor,
+          selectedDayBackground,
+          disabledDayColor,
+          todayColor,
+          dayStyle,
+          localizations,
+          otherMonthDaysColor,
+          true,
+        );
+        dayItems.add(dayTile);
       } else {
         final DateTime dayToBuild = DateTime(year, month, day);
-        final bool isDisabled = dayToBuild.isAfter(widget.config.lastDate) ||
-            dayToBuild.isBefore(widget.config.firstDate) ||
-            !(widget.config.selectableDayPredicate?.call(dayToBuild) ?? true);
-        final bool isSelectedDay =
-            widget.selectedDates.any((d) => DateUtils.isSameDay(d, dayToBuild));
-
-        final bool isToday = DateUtils.isSameDay(widget.config.currentDate, dayToBuild);
-
-        BoxDecoration? decoration;
-        Color dayColor = enabledDayColor;
-        if (isSelectedDay) {
-          // The selected day gets a circle background highlight, and a
-          // contrasting text color.
-          dayColor = selectedDayColor;
-          decoration = BoxDecoration(
-            borderRadius: widget.config.dayBorderRadius,
-            color: widget.config.selectedDayHighlightColor ?? selectedDayBackground,
-            shape: widget.config.dayBorderRadius != null ? BoxShape.rectangle : BoxShape.circle,
-          );
-        } else if (isDisabled) {
-          dayColor = disabledDayColor;
-        } else if (isToday) {
-          // The current day gets a different text color and a circle stroke
-          // border.
-          dayColor = widget.config.selectedDayHighlightColor ?? todayColor;
-          decoration = BoxDecoration(
-            borderRadius: widget.config.dayBorderRadius,
-            border: Border.all(color: dayColor),
-            shape: widget.config.dayBorderRadius != null ? BoxShape.rectangle : BoxShape.circle,
-          );
-        }
-
-        var customDayTextStyle = widget.config.dayTextStylePredicate?.call(date: dayToBuild) ??
-            widget.config.dayTextStyle;
-
-        if (isToday && widget.config.todayTextStyle != null) {
-          customDayTextStyle = widget.config.todayTextStyle;
-        }
-
-        if (isDisabled) {
-          customDayTextStyle = customDayTextStyle?.copyWith(
-            color: disabledDayColor,
-            fontWeight: FontWeight.normal,
-          );
-          if (widget.config.disabledDayTextStyle != null) {
-            customDayTextStyle = widget.config.disabledDayTextStyle;
-          }
-        }
-
-        final isFullySelectedRangePicker =
-            widget.config.calendarType == CalendarDatePicker2Type.range &&
-                widget.selectedDates.length == 2;
-        var isDateInBetweenRangePickerSelectedDates = false;
-
-        if (isFullySelectedRangePicker) {
-          final startDate = DateUtils.dateOnly(widget.selectedDates[0]);
-          final endDate = DateUtils.dateOnly(widget.selectedDates[1]);
-
-          isDateInBetweenRangePickerSelectedDates =
-              !(dayToBuild.isBefore(startDate) || dayToBuild.isAfter(endDate)) &&
-                  !DateUtils.isSameDay(startDate, endDate);
-        }
-
-        if (isDateInBetweenRangePickerSelectedDates &&
-            widget.config.selectedRangeDayTextStyle != null) {
-          customDayTextStyle = widget.config.selectedRangeDayTextStyle;
-        }
-
-        if (isSelectedDay) {
-          customDayTextStyle = widget.config.selectedDayTextStyle;
-        }
-
-        final dayTextStyle = customDayTextStyle ?? dayStyle.apply(color: dayColor);
-
-        Widget dayWidget = widget.config.dayBuilder?.call(
-              date: dayToBuild,
-              textStyle: dayTextStyle,
-              decoration: decoration,
-              isSelected: isSelectedDay,
-              isDisabled: isDisabled,
-              isToday: isToday,
-            ) ??
-            _buildDefaultDayWidgetContent(
-              decoration,
-              localizations,
-              day,
-              dayTextStyle,
-            );
-
-        if (isDateInBetweenRangePickerSelectedDates) {
-          final rangePickerIncludedDayDecoration = BoxDecoration(
-            border: Border.all(
-                width: 0,
-                color: widget.config.selectedRangeHighlightColor ??
-                    (widget.config.selectedDayHighlightColor ?? selectedDayBackground)
-                        .withOpacity(0.15)),
-            color: widget.config.selectedRangeHighlightColor ??
-                (widget.config.selectedDayHighlightColor ?? selectedDayBackground)
-                    .withOpacity(0.15),
-          );
-
-          if (DateUtils.isSameDay(
-            DateUtils.dateOnly(widget.selectedDates[0]),
-            dayToBuild,
-          )) {
-            if (((widget.selectedDates[0].weekday + 1) % 7) != widget.config.firstDayOfWeek) {
-              dayWidget = Stack(
-                children: [
-                  Row(children: [
-                    Expanded(
-                      child: Container(
-                        decoration: rangePickerIncludedDayDecoration.copyWith(
-                          borderRadius: widget.config.dayBorderRadius?.copyWith(
-                            topRight: Radius.zero,
-                            bottomRight: Radius.zero,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]),
-                  dayWidget
-                ],
-              );
-            }
-          } else if (DateUtils.isSameDay(
-            DateUtils.dateOnly(widget.selectedDates[1]),
-            dayToBuild,
-          )) {
-            if ((widget.selectedDates[1].weekday % 7) != widget.config.firstDayOfWeek) {
-              dayWidget = Stack(
-                children: [
-                  Row(children: [
-                    Expanded(
-                      child: Container(
-                        decoration: rangePickerIncludedDayDecoration.copyWith(
-                          borderRadius: widget.config.dayBorderRadius?.copyWith(
-                            topLeft: Radius.zero,
-                            bottomLeft: Radius.zero,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ]),
-                  dayWidget,
-                ],
-              );
-            }
-          } else {
-            final firstDayOfWeek =
-                widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex;
-            BoxDecoration dec = rangePickerIncludedDayDecoration;
-            if ((dayToBuild.weekday % 7) == firstDayOfWeek) {
-              dec = dec.copyWith(
-                  borderRadius: widget.config.dayBorderRadius?.copyWith(
-                topRight: Radius.zero,
-                bottomRight: Radius.zero,
-              ));
-            }
-            if (((dayToBuild.weekday + 1) % 7) == firstDayOfWeek) {
-              dec = dec.copyWith(
-                  borderRadius: widget.config.dayBorderRadius?.copyWith(
-                topLeft: Radius.zero,
-                bottomLeft: Radius.zero,
-              ));
-            }
-            dayWidget = Stack(
-              children: [
-                Container(
-                  decoration: dec,
-                ),
-                dayWidget,
-              ],
-            );
-          }
-        }
-
-        dayWidget = Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4.0),
-          child: dayWidget,
+        Widget dayTile = _buildDayTile(
+          dayToBuild,
+          enabledDayColor,
+          selectedDayColor,
+          selectedDayBackground,
+          disabledDayColor,
+          todayColor,
+          dayStyle,
+          localizations,
+          otherMonthDaysColor,
         );
-
-        if (isDisabled) {
-          dayWidget = ExcludeSemantics(
-            child: dayWidget,
-          );
-        } else {
-          dayWidget = InkResponse(
-            focusNode: _dayFocusNodes[day - 1],
-            onTap: () => widget.onChanged(dayToBuild),
-            highlightShape: BoxShape.rectangle,
-            borderRadius: widget.config.dayBorderRadius,
-            radius: _dayPickerRowHeight / 2 + 4,
-            splashColor: selectedDayBackground.withOpacity(0.38),
-            splashFactory: NoSplash.splashFactory,
-            child: Semantics(
-              // We want the day of month to be spoken first irrespective of the
-              // locale-specific preferences or TextDirection. This is because
-              // an accessibility user is more likely to be interested in the
-              // day of month before the rest of the date, as they are looking
-              // for the day of month. To do that we prepend day of month to the
-              // formatted full date.
-              label:
-                  '${localizations.formatDecimal(day)}, ${localizations.formatFullDate(dayToBuild)}',
-              selected: isSelectedDay,
-              excludeSemantics: true,
-              child: dayWidget,
-            ),
-          );
-        }
-
-        dayItems.add(dayWidget);
+        dayItems.add(dayTile);
       }
+    }
+
+    for (int i = 1; i <= endOfMonthOffset; i++) {
+      final daysInMonth = DateUtils.getDaysInMonth(year, month);
+      final DateTime dayToBuild = DateTime(year, month, daysInMonth).add(Duration(days: i));
+      Widget dayTile = _buildDayTile(
+        dayToBuild,
+        enabledDayColor,
+        selectedDayColor,
+        selectedDayBackground,
+        disabledDayColor,
+        todayColor,
+        dayStyle,
+        localizations,
+        otherMonthDaysColor,
+        true,
+      );
+      dayItems.add(dayTile);
     }
 
     return Padding(
@@ -363,6 +201,229 @@ class _DayPickerState extends State<_DayPicker> {
         ),
       ),
     );
+  }
+
+  Widget _buildDayTile(
+      DateTime dayToBuild,
+      Color enabledDayColor,
+      Color selectedDayColor,
+      Color selectedDayBackground,
+      Color disabledDayColor,
+      Color todayColor,
+      TextStyle dayStyle,
+      MaterialLocalizations localizations,
+      Color otherMonthDaysColor,
+      [bool isOtherMonth = false]) {
+    final bool isDisabled = dayToBuild.isAfter(widget.config.lastDate) ||
+        dayToBuild.isBefore(widget.config.firstDate) ||
+        !(widget.config.selectableDayPredicate?.call(dayToBuild) ?? true);
+    final bool isSelectedDay = widget.selectedDates.any((d) => DateUtils.isSameDay(d, dayToBuild));
+
+    final bool isToday = DateUtils.isSameDay(widget.config.currentDate, dayToBuild);
+
+    BoxDecoration? decoration;
+    Color dayColor = enabledDayColor;
+    if (isSelectedDay) {
+      // The selected day gets a circle background highlight, and a
+      // contrasting text color.
+      dayColor = selectedDayColor;
+      decoration = BoxDecoration(
+        borderRadius: widget.config.dayBorderRadius,
+        color: widget.config.selectedDayHighlightColor ?? selectedDayBackground,
+        shape: widget.config.dayBorderRadius != null ? BoxShape.rectangle : BoxShape.circle,
+      );
+    } else if (isDisabled) {
+      dayColor = disabledDayColor;
+    } else if (isToday) {
+      // The current day gets a different text color and a circle stroke
+      // border.
+      dayColor = widget.config.selectedDayHighlightColor ?? todayColor;
+      decoration = BoxDecoration(
+        borderRadius: widget.config.dayBorderRadius,
+        border: Border.all(color: dayColor),
+        shape: widget.config.dayBorderRadius != null ? BoxShape.rectangle : BoxShape.circle,
+      );
+    }
+
+    var customDayTextStyle =
+        widget.config.dayTextStylePredicate?.call(date: dayToBuild) ?? widget.config.dayTextStyle;
+
+    if (isToday && widget.config.todayTextStyle != null) {
+      customDayTextStyle = widget.config.todayTextStyle;
+    }
+
+    if (isDisabled) {
+      customDayTextStyle = customDayTextStyle?.copyWith(
+        color: disabledDayColor,
+        fontWeight: FontWeight.normal,
+      );
+      if (widget.config.disabledDayTextStyle != null) {
+        customDayTextStyle = widget.config.disabledDayTextStyle;
+      }
+    }
+
+    final isFullySelectedRangePicker =
+        widget.config.calendarType == CalendarDatePicker2Type.range &&
+            widget.selectedDates.length == 2;
+    var isDateInBetweenRangePickerSelectedDates = false;
+
+    if (isFullySelectedRangePicker) {
+      final startDate = DateUtils.dateOnly(widget.selectedDates[0]);
+      final endDate = DateUtils.dateOnly(widget.selectedDates[1]);
+
+      isDateInBetweenRangePickerSelectedDates =
+          !(dayToBuild.isBefore(startDate) || dayToBuild.isAfter(endDate)) &&
+              !DateUtils.isSameDay(startDate, endDate);
+    }
+
+    if (isDateInBetweenRangePickerSelectedDates &&
+        widget.config.selectedRangeDayTextStyle != null) {
+      customDayTextStyle = widget.config.selectedRangeDayTextStyle;
+    }
+
+    final dayTextStyle;
+
+    if (isOtherMonth && !isSelectedDay && !isDateInBetweenRangePickerSelectedDates) {
+      dayTextStyle = dayStyle.apply(color: otherMonthDaysColor);
+    } else {
+      dayTextStyle = customDayTextStyle ?? dayStyle.apply(color: dayColor);
+    }
+
+    Widget dayWidget = widget.config.dayBuilder?.call(
+          date: dayToBuild,
+          textStyle: dayTextStyle,
+          decoration: decoration,
+          isSelected: isSelectedDay,
+          isDisabled: isDisabled,
+          isToday: isToday,
+        ) ??
+        _buildDefaultDayWidgetContent(
+          decoration,
+          localizations,
+          dayToBuild.day,
+          dayTextStyle,
+        );
+
+    if (isDateInBetweenRangePickerSelectedDates) {
+      final rangePickerIncludedDayDecoration = BoxDecoration(
+        border: Border.all(
+            width: 0,
+            color: widget.config.selectedRangeHighlightColor ??
+                (widget.config.selectedDayHighlightColor ?? selectedDayBackground)
+                    .withOpacity(0.15)),
+        color: widget.config.selectedRangeHighlightColor ??
+            (widget.config.selectedDayHighlightColor ?? selectedDayBackground).withOpacity(0.15),
+      );
+
+      if (DateUtils.isSameDay(
+        DateUtils.dateOnly(widget.selectedDates[0]),
+        dayToBuild,
+      )) {
+        if (((widget.selectedDates[0].weekday + 1) % 7) != widget.config.firstDayOfWeek) {
+          dayWidget = Stack(
+            children: [
+              Row(children: [
+                Expanded(
+                  child: Container(
+                    decoration: rangePickerIncludedDayDecoration.copyWith(
+                      borderRadius: widget.config.dayBorderRadius?.copyWith(
+                        topRight: Radius.zero,
+                        bottomRight: Radius.zero,
+                      ),
+                    ),
+                  ),
+                ),
+              ]),
+              dayWidget
+            ],
+          );
+        }
+      } else if (DateUtils.isSameDay(
+        DateUtils.dateOnly(widget.selectedDates[1]),
+        dayToBuild,
+      )) {
+        if ((widget.selectedDates[1].weekday % 7) != widget.config.firstDayOfWeek) {
+          dayWidget = Stack(
+            children: [
+              Row(children: [
+                Expanded(
+                  child: Container(
+                    decoration: rangePickerIncludedDayDecoration.copyWith(
+                      borderRadius: widget.config.dayBorderRadius?.copyWith(
+                        topLeft: Radius.zero,
+                        bottomLeft: Radius.zero,
+                      ),
+                    ),
+                  ),
+                ),
+              ]),
+              dayWidget,
+            ],
+          );
+        }
+      } else {
+        final firstDayOfWeek = widget.config.firstDayOfWeek ?? localizations.firstDayOfWeekIndex;
+        BoxDecoration dec = rangePickerIncludedDayDecoration;
+        if ((dayToBuild.weekday % 7) == firstDayOfWeek) {
+          dec = dec.copyWith(
+              borderRadius: widget.config.dayBorderRadius?.copyWith(
+            topRight: Radius.zero,
+            bottomRight: Radius.zero,
+          ));
+        }
+        if (((dayToBuild.weekday + 1) % 7) == firstDayOfWeek) {
+          dec = dec.copyWith(
+              borderRadius: widget.config.dayBorderRadius?.copyWith(
+            topLeft: Radius.zero,
+            bottomLeft: Radius.zero,
+          ));
+        }
+        dayWidget = Stack(
+          children: [
+            Container(
+              decoration: dec,
+            ),
+            dayWidget,
+          ],
+        );
+      }
+    }
+
+    dayWidget = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: dayWidget,
+    );
+
+    if (isDisabled) {
+      dayWidget = ExcludeSemantics(
+        child: dayWidget,
+      );
+    } else {
+      dayWidget = InkResponse(
+        // focusNode: _dayFocusNodes[day - 1],
+        onTap: () => widget.onChanged(dayToBuild),
+        highlightShape: BoxShape.rectangle,
+        borderRadius: widget.config.dayBorderRadius,
+        radius: _dayPickerRowHeight / 2 + 4,
+        splashColor: selectedDayBackground.withOpacity(0.38),
+        splashFactory: NoSplash.splashFactory,
+        child: Semantics(
+          // We want the day of month to be spoken first irrespective of the
+          // locale-specific preferences or TextDirection. This is because
+          // an accessibility user is more likely to be interested in the
+          // day of month before the rest of the date, as they are looking
+          // for the day of month. To do that we prepend day of month to the
+          // formatted full date.
+          label:
+              '${localizations.formatDecimal(dayToBuild.day)}, ${localizations.formatFullDate(dayToBuild)}',
+          selected: isSelectedDay,
+          excludeSemantics: true,
+          child: dayWidget,
+        ),
+      );
+    }
+
+    return dayWidget;
   }
 
   Widget _buildDefaultDayWidgetContent(

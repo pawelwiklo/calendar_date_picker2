@@ -10,3 +10,13 @@ int getMonthFirstDayOffset(int year, int month, int firstDayOfWeekIndex) {
   // and the day corresponding to the first of the month.
   return (weekdayFromMonday - firstDayOfWeekIndex) % 7;
 }
+
+int getMonthLastDayOffset(int year, int month, int firstDayOfWeekIndex) {
+  final int daysInMonth = DateTime(year, month + 1, 0).day;
+
+  final int lastDayWeekdayFromMonday = DateTime(year, month, daysInMonth).weekday - 1;
+
+  firstDayOfWeekIndex = (firstDayOfWeekIndex - 1) % 7;
+
+  return (7 - (lastDayWeekdayFromMonday - firstDayOfWeekIndex + 1)) % 7;
+}
